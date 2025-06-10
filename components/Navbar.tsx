@@ -1,134 +1,233 @@
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useTheme } from 'next-themes';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Moon, Sun, Menu, User } from 'lucide-react';
+import { Menu, X, Sun, Moon, User, LayoutDashboard, Calendar } from 'lucide-react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from 'next-themes';
 import { supabase } from '../utils/supabaseClient';
-import { ThemeToggle } from './ThemeToggle';
 
-interface NavbarProps {
-  className?: string;
-}
+const Navbar: React.FC<{ className?: string }> = ({ className }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [userName, setUserName] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const router = useRouter();
+    const { theme, setTheme } = useTheme();
 
-const Navbar: React.FC<NavbarProps> = ({ className }) => {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const router = useRouter();
+    useEffect(() => {
+        const getUser = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    setUserName(user.email?.split('@')[0] || 'User');
+                }
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        getUser();
+    }, []);
 
-  useEffect(() => {
-    setMounted(true);
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+    const navItems = [
+        { name: 'Features', href: '#features' },
+        { name: 'Docs', href: '/docs' },
+    ];
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        router.push('/');
     };
-    getUser();
-  }, []);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
-  return (
-    <nav className={`bg-background border-b border-border py-3 ${className}`}>
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link href="/" className="text-foreground text-xl font-bold">
-          AttendanceTracker
-        </Link>
-        <div className="hidden md:flex space-x-4 items-center">
-          <NavLink href="/">Home</NavLink>
-          <NavLink href="/docs">Docs</NavLink>
-          {user ? (
-            <>
-              <NavLink href="/dashboard">Dashboard</NavLink>
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-secondary/50">
-                  <span className="text-1xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 animate-gradient bg-300%">
-                    Hi, {user.email?.split('@')[0] || 'User'}
-                  </span>
-                </div>
-                <Button onClick={handleSignOut} variant="outline">
-                  Sign Out
-                </Button>
-              </div>
-            </>
-          ) : (
-            <Button onClick={() => router.push('/login')} variant="outline">
-              Login
-            </Button>
-          )}
-          {mounted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="ml-2"
-            >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-          )}
-        </div>
-        <div className="md:hidden flex items-center">
-          {mounted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="mr-2"
-            >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-          )}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <div className="flex flex-col space-y-4 mt-4">
-                <NavLink href="/">Home</NavLink>
-                <NavLink href="/docs">Docs</NavLink>
-                {user ? (
-                  <>
-                    <NavLink href="/dashboard">Dashboard</NavLink>
-                    <div className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-secondary/50">
-                      <User className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 animate-gradient bg-300%">
-                        {user.email?.split('@')[0] || 'User'}
-                      </span>
+    return (
+        <nav className={`fixed w-full z-50 bg-background/80 backdrop-blur-lg border-b ${className}`}>
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="flex h-16 items-center justify-between">
+                    <div className="flex items-center">
+                        <Link href="/" className="flex items-center space-x-2">
+                            <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500" />
+                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">
+                                Attend
+                            </span>
+                        </Link>
                     </div>
-                    <Button onClick={handleSignOut} variant="outline">
-                      Sign Out
-                    </Button>
-                  </>
-                ) : (
-                  <Button onClick={() => router.push('/login')} variant="outline">
-                    Login
-                  </Button>
+
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex md:items-center md:space-x-8">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                            >
+                                {item.name}
+                            </Link>
+                        ))}
+                        {!isLoading && userName && (
+                            <>
+                                <Link
+                                    href="/dashboard"
+                                    className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1"
+                                >
+                                    <LayoutDashboard className="h-4 w-4" />
+                                    <span>Dashboard</span>
+                                </Link>
+                                <Link
+                                    href="/attendance-records"
+                                    className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1"
+                                >
+                                    <Calendar className="h-4 w-4" />
+                                    <span>Attendance Records</span>
+                                </Link>
+                            </>
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                            className="text-muted-foreground hover:text-primary"
+                        >
+                            {theme === 'dark' ? (
+                                <Sun className="h-5 w-5" />
+                            ) : (
+                                <Moon className="h-5 w-5" />
+                            )}
+                        </Button>
+                        {!isLoading && (
+                            userName ? (
+                                <div className="flex items-center space-x-4">
+                                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                        <User className="h-4 w-4" />
+                                        <span>{userName}</span>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleSignOut}
+                                        className="text-sm"
+                                    >
+                                        Sign Out
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Button
+                                    onClick={() => router.push('/login')}
+                                    className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                                >
+                                    Sign In
+                                </Button>
+                            )
+                        )}
+                    </div>
+
+                    {/* Mobile menu button */}
+                    <div className="flex md:hidden items-center space-x-2">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                            className="text-muted-foreground hover:text-primary"
+                        >
+                            {theme === 'dark' ? (
+                                <Sun className="h-5 w-5" />
+                            ) : (
+                                <Moon className="h-5 w-5" />
+                            )}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsOpen(!isOpen)}
+                            className="text-muted-foreground hover:text-primary"
+                        >
+                            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Navigation */}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden bg-background/80 backdrop-blur-lg border-t"
+                    >
+                        <div className="space-y-1 px-4 pb-3 pt-2">
+                            {navItems.map((item) => (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md"
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    {item.name}
+                                </Link>
+                            ))}
+                            {!isLoading && userName && (
+                                <>
+                                    <Link
+                                        href="/dashboard"
+                                        className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        <div className="flex items-center space-x-2">
+                                            <LayoutDashboard className="h-4 w-4" />
+                                            <span>Dashboard</span>
+                                        </div>
+                                    </Link>
+                                    <Link
+                                        href="/attendance-records"
+                                        className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-md"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        <div className="flex items-center space-x-2">
+                                            <Calendar className="h-4 w-4" />
+                                            <span>Attendance Records</span>
+                                        </div>
+                                    </Link>
+                                </>
+                            )}
+                            {!isLoading && (
+                                userName ? (
+                                    <>
+                                        <div className="px-3 py-2 text-base font-medium text-muted-foreground">
+                                            <div className="flex items-center space-x-2">
+                                                <User className="h-4 w-4" />
+                                                <span>{userName}</span>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            onClick={() => {
+                                                handleSignOut();
+                                                setIsOpen(false);
+                                            }}
+                                            variant="outline"
+                                            className="w-full mt-2"
+                                        >
+                                            Sign Out
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <Button
+                                        onClick={() => {
+                                            router.push('/login');
+                                            setIsOpen(false);
+                                        }}
+                                        className="w-full mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                                    >
+                                        Sign In
+                                    </Button>
+                                )
+                            )}
+                        </div>
+                    </motion.div>
                 )}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
-    </nav>
-  );
+            </AnimatePresence>
+        </nav>
+    );
 };
 
-const NavLink: React.FC<{ href: string; children: React.ReactNode }> = ({ href, children }) => (
-  <Link
-    href={href}
-    className="text-foreground hover:text-primary transition duration-300 font-semibold"
-  >
-    {children}
-  </Link>
-);
-
 export default Navbar;
-
