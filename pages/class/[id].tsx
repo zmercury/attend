@@ -3,10 +3,10 @@ import { useRouter } from 'next/router';
 import { supabase } from '../../utils/supabaseClient';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import Navbar from '../../components/Navbar';
 import Loader from '../../components/Loader';
-import { Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Calendar, Users, ChevronLeft, ChevronRight, CheckCircle2, XCircle, MinusCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,12 +16,15 @@ import {
   DialogFooter,
 } from '../../components/ui/dialog';
 import { useToast } from '../../hooks/use-toast';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from 'date-fns';
 import AttendanceRecord from '../../components/AttendanceRecord';
 import Link from 'next/link';
 import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
 import { Label } from '../../components/ui/label';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Badge } from '../../components/ui/badge';
+import { ScrollArea } from '../../components/ui/scroll-area';
 
 interface Class {
   id: string;
@@ -254,84 +257,164 @@ export default function ClassPage() {
     const days = eachDayOfInterval({ start, end });
 
     return (
-      <div className="w-full max-w-sm mx-auto">
-        <div className="mb-4 text-lg font-semibold text-center">
-          {format(selectedDate, 'MMMM yyyy')}
-        </div>
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500">
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">
-          {days.map((day, index) => (
+      <Card className="w-full">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
             <Button
-              key={day.toString()}
-              variant={isSameDay(day, selectedDate) ? 'default' : 'outline'}
-              className={`h-8 w-8 p-0 ${index === 0 && `col-start-${day.getDay() + 1}`}`}
-              onClick={() => setSelectedDate(day)}
+              variant="ghost"
+              size="icon"
+              onClick={() => setSelectedDate(subMonths(selectedDate, 1))}
             >
-              <time dateTime={format(day, 'yyyy-MM-dd')}>{format(day, 'd')}</time>
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-          ))}
-        </div>
-      </div>
+            <h3 className="text-lg font-semibold">
+              {format(selectedDate, 'MMMM yyyy')}
+            </h3>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSelectedDate(addMonths(selectedDate, 1))}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="text-center text-sm font-medium text-muted-foreground">
+                {day}
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {days.map((day, index) => (
+              <Button
+                key={day.toString()}
+                variant={isSameDay(day, selectedDate) ? 'default' : 'outline'}
+                className={`h-8 w-8 p-0 ${index === 0 && `col-start-${day.getDay() + 1}`}`}
+                onClick={() => setSelectedDate(day)}
+              >
+                <time dateTime={format(day, 'yyyy-MM-dd')}>{format(day, 'd')}</time>
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     );
   };
 
   const renderAttendanceList = () => {
     const isAnyAttendanceMarked = attendanceData.some(a => a.status !== null);
+    const presentCount = attendanceData.filter(a => a.status === true).length;
+    const absentCount = attendanceData.filter(a => a.status === false).length;
+    const unmarkedCount = attendanceData.filter(a => a.status === null).length;
 
     return (
-      <div className="space-y-4 overflow-y-auto max-h-[400px]">
-        {students.map(student => {
-          const attendance = attendanceData.find(a => a.student_id === student.id);
-          return (
-            <div
-              key={student.id}
-              className="flex items-center justify-between p-4 bg-card rounded-md"
-            >
-              <span className="font-medium">{student.name}</span>
-              <RadioGroup
-                onValueChange={value => {
-                  if (value === 'unmarked') {
-                    toggleAttendance(student.id, null);
-                  } else {
-                    toggleAttendance(student.id, value === 'present');
-                  }
-                }}
-                value={
-                  attendance?.status === null
-                    ? 'unmarked'
-                    : attendance?.status
-                      ? 'present'
-                      : 'absent'
-                }
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="present" id={`present-${student.id}`} />
-                  <Label htmlFor={`present-${student.id}`}>Present</Label>
+      <div className="space-y-6">
+        <div className="grid grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Present</p>
+                  <h3 className="text-2xl font-bold text-green-600">{presentCount}</h3>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="absent" id={`absent-${student.id}`} />
-                  <Label htmlFor={`absent-${student.id}`}>Absent</Label>
+                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Absent</p>
+                  <h3 className="text-2xl font-bold text-red-600">{absentCount}</h3>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="unmarked" id={`unmarked-${student.id}`} />
-                  <Label htmlFor={`unmarked-${student.id}`}>Unmarked</Label>
+                <XCircle className="h-8 w-8 text-red-600" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Unmarked</p>
+                  <h3 className="text-2xl font-bold text-muted-foreground">{unmarkedCount}</h3>
                 </div>
-              </RadioGroup>
-            </div>
-          );
-        })}
-        {!isAnyAttendanceMarked && (
-          <p className="text-center text-muted-foreground mt-4">
-            No attendance marked yet. Mark attendance to count this as a class day.
-          </p>
-        )}
+                <MinusCircle className="h-8 w-8 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <ScrollArea className="h-[400px] rounded-md border">
+          <div className="p-4 space-y-4">
+            {students.map(student => {
+              const attendance = attendanceData.find(a => a.student_id === student.id);
+              return (
+                <div
+                  key={student.id}
+                  className="flex items-center justify-between p-4 bg-card rounded-lg border"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-lg font-semibold text-primary">
+                        {student.name.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium">{student.name}</p>
+                      <p className="text-sm text-muted-foreground">{student.email}</p>
+                    </div>
+                  </div>
+                  <RadioGroup
+                    onValueChange={value => {
+                      if (value === 'unmarked') {
+                        toggleAttendance(student.id, null);
+                      } else {
+                        toggleAttendance(student.id, value === 'present');
+                      }
+                    }}
+                    value={
+                      attendance?.status === null
+                        ? 'unmarked'
+                        : attendance?.status
+                          ? 'present'
+                          : 'absent'
+                    }
+                    className="flex space-x-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="present" id={`present-${student.id}`} />
+                      <Label htmlFor={`present-${student.id}`} className="cursor-pointer">
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          Present
+                        </Badge>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="absent" id={`absent-${student.id}`} />
+                      <Label htmlFor={`absent-${student.id}`} className="cursor-pointer">
+                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                          Absent
+                        </Badge>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="unmarked" id={`unmarked-${student.id}`} />
+                      <Label htmlFor={`unmarked-${student.id}`} className="cursor-pointer">
+                        <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+                          Unmarked
+                        </Badge>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
       </div>
     );
   };
@@ -341,120 +424,167 @@ export default function ClassPage() {
   if (!classData) return <div>No class data found.</div>;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container mx-auto p-8">
-        <Breadcrumbs
-          items={[
-            { label: 'Dashboard', href: '/dashboard' },
-            { label: classData?.name || 'Class', href: `/class/${id}` },
-          ]}
-        />
-        <Button variant="outline" onClick={() => router.back()} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        <h1 className="text-4xl font-bold mb-4 text-primary">{classData?.name}</h1>
-        <p className="text-xl text-muted-foreground mb-8">{classData?.description}</p>
-        <Card className="bg-card text-card-foreground mb-8">
-          <CardHeader>
-            <CardTitle className="text-primary">Attendance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col lg:flex-row gap-8">
-              <div className="w-full lg:w-1/3">{renderCalendar()}</div>
-              <div className="w-full lg:w-2/3">
-                <h3 className="text-lg font-semibold mb-4">
-                  Attendance for {format(selectedDate, 'MMMM d, yyyy')}
-                </h3>
-                {renderAttendanceList()}
+      <main className="container mx-auto px-4 py-12">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <Breadcrumbs
+              items={[
+                { label: 'Dashboard', href: '/dashboard' },
+                { label: classData?.name || 'Class', href: `/class/${id}` },
+              ]}
+            />
+            <h1 className="text-4xl font-bold mt-4 text-primary">{classData?.name}</h1>
+            <p className="text-xl text-muted-foreground mt-2">{classData?.description}</p>
+          </div>
+          <Button variant="outline" onClick={() => router.back()}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </div>
+
+        <Tabs defaultValue="attendance" className="space-y-8">
+          <TabsList>
+            <TabsTrigger value="attendance" className="flex items-center space-x-2">
+              <Calendar className="w-4 h-4" />
+              <span>Attendance</span>
+            </TabsTrigger>
+            <TabsTrigger value="students" className="flex items-center space-x-2">
+              <Users className="w-4 h-4" />
+              <span>Students</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="attendance" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1">
+                {renderCalendar()}
+              </div>
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Attendance for {format(selectedDate, 'MMMM d, yyyy')}</CardTitle>
+                    <CardDescription>
+                      Mark attendance for all students in your class
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {renderAttendanceList()}
+                  </CardContent>
+                </Card>
               </div>
             </div>
-            <div className="mt-8">
-              <Link href={`/attendance-record/${id}`}>
-                <Button>View Detailed Attendance Record</Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card className="bg-card text-card-foreground mb-8">
-          <CardHeader>
-            <CardTitle className="text-primary">Today&apos;s Attendance Record</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AttendanceRecord
-              classId={id as string}
-              date={format(selectedDate, 'yyyy-MM-dd')}
-              attendanceData={attendanceData.map(a => ({ ...a, status: a.status || false }))}
-            />
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Today&apos;s Attendance Record</CardTitle>
+                <CardDescription>
+                  View and export the attendance record for {format(selectedDate, 'MMMM d, yyyy')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AttendanceRecord
+                  classId={id as string}
+                  date={format(selectedDate, 'yyyy-MM-dd')}
+                  attendanceData={attendanceData.map(a => ({ ...a, status: a.status || false }))}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <Card className="bg-card text-card-foreground">
-          <CardHeader>
-            <CardTitle className="text-primary">Students</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Dialog open={isAddStudentDialogOpen} onOpenChange={setIsAddStudentDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="mb-4">
-                  <Plus className="w-4 h-4 mr-2" /> Add Student
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Student</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 mt-4">
-                  <Input
-                    placeholder="Student Name"
-                    value={newStudentName}
-                    onChange={e => setNewStudentName(e.target.value)}
-                  />
-                  <Input
-                    placeholder="Student Email"
-                    value={newStudentEmail}
-                    onChange={e => setNewStudentEmail(e.target.value)}
-                  />
-                  <Button onClick={addStudent}>Add Student</Button>
+          <TabsContent value="students">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Student Management</CardTitle>
+                    <CardDescription>
+                      Add, remove, and manage students in your class
+                    </CardDescription>
+                  </div>
+                  <Dialog open={isAddStudentDialogOpen} onOpenChange={setIsAddStudentDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="w-4 h-4 mr-2" /> Add Student
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add New Student</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="name">Student Name</Label>
+                          <Input
+                            id="name"
+                            placeholder="Enter student name"
+                            value={newStudentName}
+                            onChange={e => setNewStudentName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Student Email</Label>
+                          <Input
+                            id="email"
+                            placeholder="Enter student email"
+                            value={newStudentEmail}
+                            onChange={e => setNewStudentEmail(e.target.value)}
+                          />
+                        </div>
+                        <Button onClick={addStudent} className="w-full">Add Student</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              </DialogContent>
-            </Dialog>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-primary/20">
-                    <th className="text-left py-2 px-4 text-primary">Name</th>
-                    <th className="text-left py-2 px-4 text-primary">Email</th>
-                    <th className="text-right py-2 px-4 text-primary">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map(student => (
-                    <tr key={student.id} className="border-b border-primary/10">
-                      <td className="py-2 px-4">{student.name}</td>
-                      <td className="py-2 px-4">{student.email}</td>
-                      <td className="text-right py-2 px-4">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => {
-                            setDeleteStudentId(student.id);
-                            setIsDeleteDialogOpen(true);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[500px] rounded-md border">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-4 px-6 font-medium text-muted-foreground">Name</th>
+                        <th className="text-left py-4 px-6 font-medium text-muted-foreground">Email</th>
+                        <th className="text-right py-4 px-6 font-medium text-muted-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {students.map(student => (
+                        <tr key={student.id} className="border-b">
+                          <td className="py-4 px-6">
+                            <div className="flex items-center space-x-3">
+                              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                <span className="text-sm font-medium text-primary">
+                                  {student.name.charAt(0)}
+                                </span>
+                              </div>
+                              <span className="font-medium">{student.name}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 text-muted-foreground">{student.email}</td>
+                          <td className="text-right py-4 px-6">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setDeleteStudentId(student.id);
+                                setIsDeleteDialogOpen(true);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 text-red-600" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
+
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

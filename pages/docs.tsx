@@ -1,144 +1,262 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import Image from 'next/image';
-import { CheckCircle, Users, Calendar, ChartBar } from 'lucide-react';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
+import { motion } from 'framer-motion';
+import { 
+    BookOpen, 
+    Users, 
+    Calendar, 
+    BarChart3, 
+    Search, 
+    ArrowRight,
+    Book,
+    Settings,
+    HelpCircle,
+    FileText,
+    Code,
+    Database,
+    Shield,
+    Zap
+} from 'lucide-react';
 import Footer from '../components/Footer';
 
-const DocsPage = () => {
-    return (
-        <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
-            <div className="container mx-auto p-8">
-                <h1 className="text-5xl font-bold mb-8 text-primary text-center py-10">Attendance Management System Documentation</h1>
+const sections = [
+    {
+        title: "Getting Started",
+        icon: <BookOpen className="h-5 w-5" />,
+        items: [
+            { title: "Introduction", href: "#introduction" },
+            { title: "Quick Start Guide", href: "#quick-start" },
+            { title: "Installation", href: "#installation" },
+            { title: "Configuration", href: "#configuration" },
+        ]
+    },
+    {
+        title: "Core Features",
+        icon: <Zap className="h-5 w-5" />,
+        items: [
+            { title: "Attendance Tracking", href: "#attendance" },
+            { title: "Student Management", href: "#students" },
+            { title: "Calendar View", href: "#calendar" },
+            { title: "Reports & Analytics", href: "#reports" },
+        ]
+    },
+    {
+        title: "Advanced",
+        icon: <Settings className="h-5 w-5" />,
+        items: [
+            { title: "API Reference", href: "#api" },
+            { title: "Customization", href: "#customization" },
+            { title: "Integrations", href: "#integrations" },
+            { title: "Security", href: "#security" },
+        ]
+    },
+    {
+        title: "Resources",
+        icon: <HelpCircle className="h-5 w-5" />,
+        items: [
+            { title: "Tutorials", href: "#tutorials" },
+            { title: "Best Practices", href: "#best-practices" },
+            { title: "FAQ", href: "#faq" },
+            { title: "Support", href: "#support" },
+        ]
+    }
+];
 
-                <section className="mb-12">
-                    <h2 className="text-3xl font-semibold mb-4 text-primary">What Our Program Does</h2>
-                    <p className="text-lg mb-6">
-                        Our Attendance Management System is designed to streamline the process of tracking and managing student attendance in educational institutions. It offers a user-friendly interface for teachers and administrators to:
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {[
-                            { icon: <CheckCircle className="w-6 h-6 text-primary" />, title: "Easy Attendance Tracking", description: "Mark attendance with just a few clicks" },
-                            { icon: <Users className="w-6 h-6 text-primary" />, title: "Student Management", description: "Add, edit, or remove students from classes" },
-                            { icon: <Calendar className="w-6 h-6 text-primary" />, title: "Calendar Integration", description: "View attendance on an intuitive calendar interface" },
-                            { icon: <ChartBar className="w-6 h-6 text-primary" />, title: "Detailed Reports", description: "Generate comprehensive attendance reports" },
-                        ].map((feature, index) => (
-                            <Card key={index} className="bg-card hover:shadow-lg transition-shadow duration-300">
+const features = [
+    {
+        icon: <Users className="h-6 w-6 text-primary" />,
+        title: "Student Management",
+        description: "Easily manage student profiles, track attendance history, and maintain comprehensive records."
+    },
+    {
+        icon: <Calendar className="h-6 w-6 text-primary" />,
+        title: "Smart Calendar",
+        description: "Intuitive calendar interface for viewing and managing attendance across multiple classes."
+    },
+    {
+        icon: <BarChart3 className="h-6 w-6 text-primary" />,
+        title: "Advanced Analytics",
+        description: "Generate detailed reports and insights to track attendance patterns and trends."
+    },
+    {
+        icon: <Shield className="h-6 w-6 text-primary" />,
+        title: "Security & Privacy",
+        description: "Enterprise-grade security with end-to-end encryption and role-based access control."
+    }
+];
+
+const technologies = [
+    { name: "Next.js", description: "React framework for production", icon: <Code className="h-6 w-6" /> },
+    { name: "TypeScript", description: "Type-safe JavaScript", icon: <FileText className="h-6 w-6" /> },
+    { name: "Tailwind CSS", description: "Utility-first CSS framework", icon: <Code className="h-6 w-6" /> },
+    { name: "Supabase", description: "Open source Firebase alternative", icon: <Database className="h-6 w-6" /> },
+    { name: "Framer Motion", description: "Animation library for React", icon: <Zap className="h-6 w-6" /> },
+    { name: "Shadcn UI", description: "Re-usable components", icon: <Book className="h-6 w-6" /> }
+];
+
+const DocsPage = () => {
+    const [searchQuery, setSearchQuery] = useState('');
+
+    return (
+        <div className="min-h-screen bg-background">
+            <Navbar />
+            <main className="container mx-auto px-4 py-8">
+                <div className="max-w-4xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="mb-12"
+                    >
+                        <h1 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">
+                            Documentation
+                        </h1>
+                        <p className="text-xl text-muted-foreground mb-8">
+                            Everything you need to know about our attendance management system
+                        </p>
+
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Search documentation..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10"
+                            />
+                        </div>
+                    </motion.div>
+
+                    {/* Navigation Cards */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12"
+                    >
+                        {sections.map((section) => (
+                            <Card key={section.title} className="bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-colors">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center text-lg font-semibold">
-                                        {feature.icon}
-                                        <span className="ml-2">{feature.title}</span>
-                                    </CardTitle>
+                                    <div className="flex items-center space-x-2">
+                                        <div className="p-2 rounded-lg bg-primary/10">
+                                            {section.icon}
+                                        </div>
+                                        <CardTitle className="text-lg">{section.title}</CardTitle>
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-muted-foreground">{feature.description}</p>
+                                    <div className="space-y-2">
+                                        {section.items.map((item) => (
+                                            <a
+                                                key={item.title}
+                                                href={item.href}
+                                                className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                                            >
+                                                {item.title}
+                                            </a>
+                                        ))}
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))}
-                    </div>
-                </section>
+                    </motion.div>
 
-                <section className="mb-12">
-                    <h2 className="text-3xl font-semibold mb-4 text-primary">Technologies Used</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                        {[
-                            { name: "Next.js", logo: "/nextjs-icon.png" },
-                            { name: "React", logo: "/nextjs-icon.png" },
-                            { name: "Tailwind CSS", logo: "/nextjs-icon.png" },
-                            { name: "Shadcn UI", logo: "/nextjs-icon.png" },
-                            { name: "TypeScript", logo: "/nextjs-icon.png" },
-                            { name: "Supabase", logo: "/nextjs-icon.png" },
-                            { name: "Framer Motion", logo: "/nextjs-icon.png" },
-                            { name: "Chakra UI", logo: "/nextjs-icon.png" },
-                        ].map((tech) => (
-                            <Card key={tech.name} className="flex flex-col items-center justify-center p-4 hover:shadow-lg transition-shadow duration-300">
-                                {/* <Image src={tech.logo} alt={`${tech.name} logo`} width={64} height={64} className="mb-2" /> */}
-                                <p className="text-center font-semibold">{tech.name}</p>
-                            </Card>
-                        ))}
-                    </div>
-                </section>
+                    <motion.section
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="mb-12"
+                    >
+                        <h2 className="text-2xl font-semibold mb-6">Key Features</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {features.map((feature, index) => (
+                                <Card key={index} className="bg-card/50 backdrop-blur-sm border border-border/50">
+                                    <CardHeader>
+                                        <div className="flex items-center space-x-2">
+                                            <div className="p-2 rounded-lg bg-primary/10">
+                                                {feature.icon}
+                                            </div>
+                                            <CardTitle className="text-lg">{feature.title}</CardTitle>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-muted-foreground">{feature.description}</p>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </motion.section>
 
-                <Card className="mb-8">
-                    <CardHeader>
-                        <CardTitle>Getting Started</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ol className="list-decimal list-inside space-y-2">
-                            <li>Sign up for an account or log in if you already have one.</li>
-                            <li>Once logged in, you'll be directed to the dashboard where you can manage your classes.</li>
-                        </ol>
-                    </CardContent>
-                </Card>
+                    <motion.section
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                        className="mb-12"
+                    >
+                        <h2 className="text-2xl font-semibold mb-6">Technologies</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {technologies.map((tech) => (
+                                <Card key={tech.name} className="bg-card/50 backdrop-blur-sm border border-border/50">
+                                    <CardHeader>
+                                        <div className="flex items-center space-x-2">
+                                            <div className="p-2 rounded-lg bg-primary/10">
+                                                {tech.icon}
+                                            </div>
+                                            <CardTitle className="text-lg">{tech.name}</CardTitle>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-muted-foreground">{tech.description}</p>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </motion.section>
 
-                <Card className="mb-8">
-                    <CardHeader>
-                        <CardTitle>Managing Classes</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="list-disc list-inside space-y-2">
-                            <li>To create a new class, click on the "Create New Class" button on the dashboard.</li>
-                            <li>Enter the class name and description, then click "Create Class".</li>
-                            <li>To view or edit a class, click on the "View Class" button for the respective class.</li>
-                            <li>You can edit or delete a class using the icons next to each class on the dashboard.</li>
-                        </ul>
-                    </CardContent>
-                </Card>
-
-                <Card className="mb-8">
-                    <CardHeader>
-                        <CardTitle>Managing Students</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="list-disc list-inside space-y-2">
-                            <li>In the class view, you can see a list of all students in that class.</li>
-                            <li>To add a new student, click on the "Add Student" button and fill in the required information.</li>
-                            <li>To remove a student, click on the delete icon next to the student's name.</li>
-                        </ul>
-                    </CardContent>
-                </Card>
-
-                <Card className="mb-8">
-                    <CardHeader>
-                        <CardTitle>Taking Attendance</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="list-disc list-inside space-y-2">
-                            <li>In the class view, you'll see a calendar where you can select a date to take or view attendance.</li>
-                            <li>For each student, you can mark them as Present, Absent, or leave it Unmarked.</li>
-                            <li>The attendance status is automatically saved as you make changes.</li>
-                        </ul>
-                    </CardContent>
-                </Card>
-
-                <Card className="mb-8">
-                    <CardHeader>
-                        <CardTitle>Viewing Attendance Records</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="list-disc list-inside space-y-2">
-                            <li>To view detailed attendance records, click on the "View Detailed Attendance Record" button in the class view.</li>
-                            <li>Here, you can see attendance statistics for each student over time.</li>
-                            <li>Use the year and month selectors to view records for specific periods.</li>
-                            <li>Click on "View Details" for any student to see their individual attendance chart and statistics.</li>
-                        </ul>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Tips and Best Practices</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="list-disc list-inside space-y-2">
-                            <li>Regularly update attendance to maintain accurate records.</li>
-                            <li>Use the detailed attendance view to identify students who may need additional support.</li>
-                            <li>Ensure all student information is up-to-date for accurate record-keeping.</li>
-                        </ul>
-                    </CardContent>
-                </Card>
-            </div>
+                    <motion.section
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                        className="mb-12"
+                    >
+                        <h2 className="text-2xl font-semibold mb-6">Getting Started</h2>
+                        <Card className="bg-card/50 backdrop-blur-sm border border-border/50">
+                            <CardContent className="p-6">
+                                <ol className="space-y-4">
+                                    <li className="flex items-start space-x-3">
+                                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">1</span>
+                                        <div>
+                                            <h3 className="font-semibold mb-1">Create an Account</h3>
+                                            <p className="text-muted-foreground">Sign up for a new account or log in to your existing one.</p>
+                                        </div>
+                                    </li>
+                                    <li className="flex items-start space-x-3">
+                                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">2</span>
+                                        <div>
+                                            <h3 className="font-semibold mb-1">Set Up Your Classes</h3>
+                                            <p className="text-muted-foreground">Create your classes and add students to get started.</p>
+                                        </div>
+                                    </li>
+                                    <li className="flex items-start space-x-3">
+                                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">3</span>
+                                        <div>
+                                            <h3 className="font-semibold mb-1">Start Tracking Attendance</h3>
+                                            <p className="text-muted-foreground">Begin marking attendance and generating reports.</p>
+                                        </div>
+                                    </li>
+                                </ol>
+                                <Button className="mt-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                                    Get Started
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </motion.section>
+                </div>
+            </main>
             <Footer />
         </div>
     );

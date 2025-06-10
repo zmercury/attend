@@ -5,13 +5,16 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import Navbar from '../components/Navbar'
-import { motion } from 'framer-motion' // Add this import
-import { FcGoogle } from 'react-icons/fc' // Make sure to install react-icons
+import { motion } from 'framer-motion'
+import { FcGoogle } from 'react-icons/fc'
+import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/card"
 
 export default function AuthPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('') // Add this line
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
@@ -54,13 +57,9 @@ export default function AuthPage() {
             },
         })
 
-        console.log('Registration response:', data, error) // Add this line
-
         if (error) {
             setError(error.message)
-            console.error('Registration error:', error) // Add this line
         } else if (data.user) {
-            console.log('User registered:', data.user) // Add this line
             setError("Registration successful! Check your email for the confirmation link.")
         }
 
@@ -82,139 +81,225 @@ export default function AuthPage() {
             setError(error.message)
             setLoading(false)
         }
-        // If successful, the page will redirect, so we don't need to handle that case here
-    }
-
-    const fadeIn = {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1 }
-    }
-
-    const testSignUp = async () => {
-        const { data, error } = await supabase.auth.signUp({
-            email: 'test@example.com',
-            password: 'testpassword123',
-        })
-        console.log('Test sign up result:', data, error)
     }
 
     return (
         <div className="min-h-screen bg-background">
             <Navbar />
-            <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-                <div className="w-full max-w-md p-8 space-y-6 bg-card rounded-lg shadow-lg">
-                    <Tabs defaultValue="login" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="login">Login</TabsTrigger>
-                            <TabsTrigger value="register">Register</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="login">
-                            <motion.form 
-                                onSubmit={handleLogin} 
-                                className="space-y-4"
-                                initial="hidden"
-                                animate="visible"
-                                variants={fadeIn}
+            <main className="container mx-auto px-4 py-12">
+                <div className="flex items-center justify-center min-h-[calc(100vh-12rem)]">
+                    <Card className="w-full max-w-md">
+                        <CardHeader className="space-y-1">
+                            <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
+                            <CardDescription className="text-center">
+                                Enter your credentials to sign in to your account
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5 }}
+                                className="text-center mb-8"
                             >
-                                <Input
-                                    type="email"
-                                    placeholder="Email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                                <Input
-                                    type="password"
-                                    placeholder="Password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                                <Button type="submit" className="w-full" disabled={loading}>
-                                    {loading ? 'Logging in...' : 'Login'}
-                                </Button>
-                                <div className="relative">
-                                    <div className="absolute inset-0 flex items-center">
-                                        <span className="w-full border-t" />
-                                    </div>
-                                    <div className="relative flex justify-center text-xs uppercase">
-                                        <span className="bg-background px-2 text-muted-foreground">
-                                            Or continue with
-                                        </span>
-                                    </div>
-                                </div>
-                                <Button 
-                                    type="button" 
-                                    variant="outline" 
-                                    onClick={handleGoogleLogin}
-                                    disabled={loading}
-                                    className="w-full"
-                                >
-                                    <FcGoogle className="mr-2 h-4 w-4" />
-                                    Google
-                                </Button>
-                            </motion.form>
-                        </TabsContent>
-                        <TabsContent value="register">
-                            <motion.form 
-                                onSubmit={handleRegister} 
-                                className="space-y-4"
-                                initial="hidden"
-                                animate="visible"
-                                variants={fadeIn}
-                                transition={{ duration: 0.5 }}
+                                <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">
+                                    Welcome Back
+                                </h1>
+                                <p className="text-muted-foreground">
+                                    Sign in to your account to continue
+                                </p>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                                className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg p-8"
                             >
-                                <Input
-                                    type="email"
-                                    placeholder="Email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                                <Input
-                                    type="password"
-                                    placeholder="Password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                                <Input
-                                    type="password"
-                                    placeholder="Confirm Password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    required
-                                />
-                                <Button type="submit" className="w-full" disabled={loading}>
-                                    {loading ? 'Registering...' : 'Register'}
-                                </Button>
-                                <div className="relative">
-                                    <div className="absolute inset-0 flex items-center">
-                                        <span className="w-full border-t" />
-                                    </div>
-                                    <div className="relative flex justify-center text-xs uppercase">
-                                        <span className="bg-background px-2 text-muted-foreground">
-                                            Or continue with
-                                        </span>
-                                    </div>
+                                <Tabs defaultValue="login" className="w-full">
+                                    <TabsList className="grid w-full grid-cols-2 mb-8">
+                                        <TabsTrigger value="login">Login</TabsTrigger>
+                                        <TabsTrigger value="register">Register</TabsTrigger>
+                                    </TabsList>
+
+                                    <TabsContent value="login">
+                                        <form onSubmit={handleLogin} className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Email</label>
+                                                <div className="relative">
+                                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        type="email"
+                                                        placeholder="Enter your email"
+                                                        value={email}
+                                                        onChange={(e) => setEmail(e.target.value)}
+                                                        required
+                                                        className="pl-10"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Password</label>
+                                                <div className="relative">
+                                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        type="password"
+                                                        placeholder="Enter your password"
+                                                        value={password}
+                                                        onChange={(e) => setPassword(e.target.value)}
+                                                        required
+                                                        className="pl-10"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <Button 
+                                                type="submit" 
+                                                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600" 
+                                                disabled={loading}
+                                            >
+                                                {loading ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        Sign In
+                                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </form>
+
+                                        <div className="relative my-6">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <span className="w-full border-t" />
+                                            </div>
+                                            <div className="relative flex justify-center text-xs uppercase">
+                                                <span className="bg-card px-2 text-muted-foreground">
+                                                    Or continue with
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            onClick={handleGoogleLogin}
+                                            disabled={loading}
+                                            className="w-full"
+                                        >
+                                            <FcGoogle className="mr-2 h-4 w-4" />
+                                            Continue with Google
+                                        </Button>
+                                    </TabsContent>
+
+                                    <TabsContent value="register">
+                                        <form onSubmit={handleRegister} className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Email</label>
+                                                <div className="relative">
+                                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        type="email"
+                                                        placeholder="Enter your email"
+                                                        value={email}
+                                                        onChange={(e) => setEmail(e.target.value)}
+                                                        required
+                                                        className="pl-10"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Password</label>
+                                                <div className="relative">
+                                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        type="password"
+                                                        placeholder="Create a password"
+                                                        value={password}
+                                                        onChange={(e) => setPassword(e.target.value)}
+                                                        required
+                                                        className="pl-10"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Confirm Password</label>
+                                                <div className="relative">
+                                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        type="password"
+                                                        placeholder="Confirm your password"
+                                                        value={confirmPassword}
+                                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                                        required
+                                                        className="pl-10"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <Button 
+                                                type="submit" 
+                                                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600" 
+                                                disabled={loading}
+                                            >
+                                                {loading ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        Create Account
+                                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </form>
+
+                                        <div className="relative my-6">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <span className="w-full border-t" />
+                                            </div>
+                                            <div className="relative flex justify-center text-xs uppercase">
+                                                <span className="bg-card px-2 text-muted-foreground">
+                                                    Or continue with
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            onClick={handleGoogleLogin}
+                                            disabled={loading}
+                                            className="w-full"
+                                        >
+                                            <FcGoogle className="mr-2 h-4 w-4" />
+                                            Continue with Google
+                                        </Button>
+                                    </TabsContent>
+                                </Tabs>
+
+                                {error && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mt-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center"
+                                    >
+                                        {error}
+                                    </motion.div>
+                                )}
+
+                                <div className="mt-6 text-center text-sm text-muted-foreground">
+                                    By continuing, you agree to our{" "}
+                                    <Link href="/terms" className="text-primary hover:underline">
+                                        Terms of Service
+                                    </Link>{" "}
+                                    and{" "}
+                                    <Link href="/privacy" className="text-primary hover:underline">
+                                        Privacy Policy
+                                    </Link>
                                 </div>
-                                <Button 
-                                    type="button" 
-                                    variant="outline" 
-                                    onClick={handleGoogleLogin}
-                                    disabled={loading}
-                                    className="w-full"
-                                >
-                                    <FcGoogle className="mr-2 h-4 w-4" />
-                                    Google
-                                </Button>
-                            </motion.form>
-                        </TabsContent>
-                    </Tabs>
-                    {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+                            </motion.div>
+                        </CardContent>
+                    </Card>
                 </div>
-            </div>
+            </main>
         </div>
     )
 }
