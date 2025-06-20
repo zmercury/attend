@@ -23,4 +23,3 @@ This project is an Attendance Management System built with Next.js. It aims to s
 - Recharts
 - Date-fns
 - Framer Motion
-
