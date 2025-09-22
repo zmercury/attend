@@ -6,13 +6,26 @@ import { DateRange } from 'react-day-picker';
 import { useToast } from '../components/ui/use-toast';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
 import { Label } from '../components/ui/label';
 import { DateRangePicker } from '../components/ui/date-range-picker';
 import { Loader } from '../components/ui/loader';
 import Navbar from '../components/Navbar';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { Calendar, Search, Download } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../components/ui/table';
+//import { Calendar, Search, Download } from 'lucide-react';
 
 interface Class {
   id: string;
@@ -40,8 +53,8 @@ export default function AttendanceRecords() {
   const [classes, setClasses] = useState<Class[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [attendanceData, setAttendanceData] = useState<Attendance[]>([]);
-  const [selectedClass, setSelectedClass] = useState<string>("all");
-  const [selectedStudent, setSelectedStudent] = useState<string>("all");
+  const [selectedClass, setSelectedClass] = useState<string>('all');
+  const [selectedStudent, setSelectedStudent] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(new Date().setDate(new Date().getDate() - 30)),
     to: new Date(),
@@ -55,7 +68,7 @@ export default function AttendanceRecords() {
   }, []);
 
   useEffect(() => {
-    if (selectedClass !== "all") {
+    if (selectedClass !== 'all') {
       fetchStudents(selectedClass);
     } else {
       setStudents([]);
@@ -71,19 +84,16 @@ export default function AttendanceRecords() {
   const fetchClasses = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .order('name');
+      const { data, error } = await supabase.from('classes').select('*').order('name');
 
       if (error) throw error;
       setClasses(data || []);
     } catch (error) {
       console.error('Error fetching classes:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch classes",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to fetch classes',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -104,9 +114,9 @@ export default function AttendanceRecords() {
     } catch (error) {
       console.error('Error fetching students:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch students",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to fetch students',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -116,9 +126,7 @@ export default function AttendanceRecords() {
   const fetchAttendanceData = async () => {
     try {
       setLoading(true);
-      let query = supabase
-        .from('attendance')
-        .select(`
+      let query = supabase.from('attendance').select(`
           *,
           students (
             id,
@@ -130,10 +138,10 @@ export default function AttendanceRecords() {
           )
         `);
 
-      if (selectedClass !== "all") {
+      if (selectedClass !== 'all') {
         query = query.eq('class_id', selectedClass);
       }
-      if (selectedStudent !== "all") {
+      if (selectedStudent !== 'all') {
         query = query.eq('student_id', selectedStudent);
       }
       if (dateRange?.from) {
@@ -149,9 +157,9 @@ export default function AttendanceRecords() {
     } catch (error) {
       console.error('Error fetching attendance data:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch attendance data",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to fetch attendance data',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -161,9 +169,9 @@ export default function AttendanceRecords() {
   const exportToCSV = () => {
     if (attendanceData.length === 0) {
       toast({
-        title: "No Data",
-        description: "There is no data to export",
-        variant: "destructive",
+        title: 'No Data',
+        description: 'There is no data to export',
+        variant: 'destructive',
       });
       return;
     }
@@ -173,13 +181,10 @@ export default function AttendanceRecords() {
       format(new Date(record.date), 'yyyy-MM-dd'),
       record.classes?.name || '',
       record.students?.name || '',
-      record.status
+      record.status,
     ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...csvData.map(row => row.join(','))
-    ].join('\n');
+    const csvContent = [headers.join(','), ...csvData.map(row => row.join(','))].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -217,9 +222,7 @@ export default function AttendanceRecords() {
           <Card>
             <CardHeader>
               <CardTitle>Filters</CardTitle>
-              <CardDescription>
-                Select filters to view specific attendance records
-              </CardDescription>
+              <CardDescription>Select filters to view specific attendance records</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-3">
@@ -227,9 +230,9 @@ export default function AttendanceRecords() {
                   <Label>Class</Label>
                   <Select
                     value={selectedClass}
-                    onValueChange={(value) => {
+                    onValueChange={value => {
                       setSelectedClass(value);
-                      setSelectedStudent("all");
+                      setSelectedStudent('all');
                     }}
                   >
                     <SelectTrigger>
@@ -237,7 +240,7 @@ export default function AttendanceRecords() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Classes</SelectItem>
-                      {classes.map((cls) => (
+                      {classes.map(cls => (
                         <SelectItem key={cls.id} value={cls.id}>
                           {cls.name}
                         </SelectItem>
@@ -248,16 +251,13 @@ export default function AttendanceRecords() {
 
                 <div className="space-y-2">
                   <Label>Student</Label>
-                  <Select
-                    value={selectedStudent}
-                    onValueChange={setSelectedStudent}
-                  >
+                  <Select value={selectedStudent} onValueChange={setSelectedStudent}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a student" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Students</SelectItem>
-                      {students.map((student) => (
+                      {students.map(student => (
                         <SelectItem key={student.id} value={student.id}>
                           {student.name}
                         </SelectItem>
@@ -269,11 +269,7 @@ export default function AttendanceRecords() {
                 <div className="space-y-2">
                   <Label>Date Range</Label>
                   <div className="flex gap-2">
-                    <DateRangePicker
-                      value={dateRange}
-                      onChange={setDateRange}
-                      className="w-full"
-                    />
+                    <DateRangePicker value={dateRange} onChange={setDateRange} className="w-full" />
                   </div>
                 </div>
               </div>
@@ -309,11 +305,9 @@ export default function AttendanceRecords() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {attendanceData.map((record) => (
+                      {attendanceData.map(record => (
                         <TableRow key={record.id}>
-                          <TableCell>
-                            {format(new Date(record.date), 'MMM d, yyyy')}
-                          </TableCell>
+                          <TableCell>{format(new Date(record.date), 'MMM d, yyyy')}</TableCell>
                           <TableCell>{record.classes?.name}</TableCell>
                           <TableCell>{record.students?.name}</TableCell>
                           <TableCell>
@@ -339,4 +333,4 @@ export default function AttendanceRecords() {
       </main>
     </div>
   );
-} 
+}
